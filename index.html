@@ -37,22 +37,6 @@
       0% { transform: scale(1) rotate(0deg); }
       100% { transform: scale(1.08) rotate(2deg); }
     }
-    #romantic-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 0;
-      background-size: cover;
-      background-position: center;
-      filter: blur(6px) brightness(0.7) saturate(1.1);
-    }
-    #romantic-bg::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: linear-gradient(120deg, rgba(255,192,203,0.35) 0%, rgba(186,104,200,0.25) 100%);
-      pointer-events: none;
-      z-index: 1;
-    }
     .rain-canvas {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -171,14 +155,6 @@
     @keyframes floatTravel {
       0% { transform: translateY(0); }
       100% { transform: translateY(-6px); }
-    }
-    .proposal-question {
-      color: #2d5c7f;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 18px;
-      margin-top: 8px;
-      line-height: 1.3;
     }
     .btns {
       display: flex;
@@ -308,6 +284,27 @@
       transform: scale(1.12) rotate(-2deg);
       box-shadow: 0 4px 16px #4a90e2aa;
     }
+    /* Image overlay for enlarged view */
+    .image-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: pointer;
+    }
+    .enlarged-image {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      object-fit: contain;
+    }
     @media (max-width: 600px) {
       .proposal-box { padding: 10px 2vw; max-width: 99vw; }
       .poetry-container { font-size: 0.98rem; padding: 10px 6px 10px 10px; }
@@ -331,7 +328,6 @@
     <img src="1000081839.png" style="top:66vh;left:66vw;">
     <img src="1000078608.png" style="top:50vh;left:50vw;">
   </div>
-  <div id="romantic-bg"></div>
   <canvas class="rain-canvas"></canvas>
   <div id="hearts-container"></div>
   <div class="header">We met at 24 Feb 2022</div>
@@ -339,20 +335,20 @@
     <span class="rainy-emoji">🌧️</span>
     <span class="travel-emoji">✈️</span>
     <div class="poetry-container" id="poetryContainer" style="white-space: pre-line;">
-Mai banaras ka Ghat hoon
-Tum kinara banogi kya
-Mai ek khula aasma hu
-Tum chand banogi kya
-Mai Mangu jisse dua Mai
-Tum meri wo mannat banogi kya
-Mana bahut khamiya hai mere andar
-Apne pyar se un khamiyo ko Bhar paogi kya
-Ye Heer Ranjha to judai ke kisse hai
-Tum Milan ki kitab mere sath likhogi kya
-Meri kismat jisse Aabaad ho jaye
-Tum mere hatho ki wo lakir banogi kya
-Kar diya maine apne ishq ka ijhar
-Batao tum is shayar ki shayari banogi kya��🎀
+Mai banaras ka Ghat hoon<br>
+Tum kinara banogi kya<br>
+Mai ek khula aasma hu<br>
+Tum chand banogi kya<br>
+Mai Mangu jisse dua Mai<br>
+Tum meri wo mannat banogi kya<br>
+Mana bahut khamiya hai mere andar<br>
+Apne pyar se un khamiyo ko Bhar paogi kya<br>
+Ye Heer Ranjha to judai ke kisse hai<br>
+Tum Milan ki kitab mere sath likhogi kya<br>
+Meri kismat jisse Aabaad ho jaye<br>
+Tum mere hatho ki wo lakir banogi kya<br>
+Kar diya maine apne ishq ka ijhar<br>
+Batao tum is shayar ki shayari banogi kya🎀
     </div>
     <button class="read-more" id="readMoreBtn">Read More</button>
     <div class="btns">
@@ -384,6 +380,10 @@ Batao tum is shayar ki shayari banogi kya��🎀
       <img src="1000081839.png" alt="Memory 9">
       <img src="1000078608.png" alt="Memory 10">
     </div>
+  </div>
+  <!-- Image overlay for enlarged view -->
+  <div class="image-overlay" id="imageOverlay">
+    <img class="enlarged-image" id="enlargedImage" src="" alt="Enlarged Memory">
   </div>
   <script>
     // Rain effect
@@ -464,6 +464,16 @@ Batao tum is shayar ki shayari banogi kya��🎀
       if (Math.random() > 0.7) createSparkle(x, y);
     }, 1200);
 
+    // Read More logic for poetry
+    const poetryContainer = document.getElementById('poetryContainer');
+    const readMoreBtn = document.getElementById('readMoreBtn');
+    let expanded = false;
+    readMoreBtn.onclick = function() {
+      expanded = !expanded;
+      poetryContainer.classList.toggle('expanded', expanded);
+      readMoreBtn.textContent = expanded ? 'Show Less' : 'Read More';
+    };
+
     // Button logic
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
@@ -514,41 +524,30 @@ Batao tum is shayar ki shayari banogi kya��🎀
       }
     };
     noBtn.onmouseleave = function() { catGif.style.display = 'none'; };
-    // Gallery click to enlarge
+
+    // Image overlay functionality
+    const imageOverlay = document.getElementById('imageOverlay');
+    const enlargedImage = document.getElementById('enlargedImage');
+    
+    // Add click event to all gallery images
     document.querySelectorAll('.gallery img').forEach(img => {
       img.addEventListener('click', function() {
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = 0;
-        overlay.style.left = 0;
-        overlay.style.width = '100vw';
-        overlay.style.height = '100vh';
-        overlay.style.background = 'rgba(0,0,0,0.7)';
-        overlay.style.display = 'flex';
-        overlay.style.alignItems = 'center';
-        overlay.style.justifyContent = 'center';
-        overlay.style.zIndex = 1000;
-        const bigImg = document.createElement('img');
-        bigImg.src = this.src;
-        bigImg.style.maxWidth = '90vw';
-        bigImg.style.maxHeight = '90vh';
-        bigImg.style.borderRadius = '18px';
-        bigImg.style.boxShadow = '0 4px 32px #2d5c7fcc';
-        overlay.appendChild(bigImg);
-        overlay.addEventListener('click', () => document.body.removeChild(overlay));
-        document.body.appendChild(overlay);
+        enlargedImage.src = this.src;
+        imageOverlay.style.display = 'flex';
       });
     });
-
-    // Read More logic for poetry
-    const poetryContainer = document.getElementById('poetryContainer');
-    const readMoreBtn = document.getElementById('readMoreBtn');
-    let expanded = false;
-    readMoreBtn.onclick = function() {
-      expanded = !expanded;
-      poetryContainer.classList.toggle('expanded', expanded);
-      readMoreBtn.textContent = expanded ? 'Show Less' : 'Read More';
-    };
+    
+    // Close overlay when clicking on it
+    imageOverlay.addEventListener('click', function() {
+      imageOverlay.style.display = 'none';
+    });
+    
+    // Close overlay with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && imageOverlay.style.display === 'flex') {
+        imageOverlay.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html> 
